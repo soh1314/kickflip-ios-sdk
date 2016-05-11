@@ -46,18 +46,29 @@
     return nil;
 }
 
-- (void) setupHLSWriterWithEndpoint:(KFS3Stream*)endpoint {
-    
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
-    NSString *folderName = [NSString stringWithFormat:@"%@.hls", endpoint.streamID];
-    NSString *hlsDirectoryPath = [basePath stringByAppendingPathComponent:folderName];
-    [[NSFileManager defaultManager] createDirectoryAtPath:hlsDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
-    self.hlsWriter = [[KFHLSWriter alloc] initWithDirectoryPath:hlsDirectoryPath];
-    [_hlsWriter addVideoStreamWithWidth:self.videoWidth height:self.videoHeight];
-    [_hlsWriter addAudioStreamWithSampleRate:self.audioSampleRate];
-
+- (void) setupHLSWriterWithStreamID:(NSString*)streamID {
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+	NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+	NSString *folderName = [NSString stringWithFormat:@"%@.hls", streamID];
+	NSString *hlsDirectoryPath = [basePath stringByAppendingPathComponent:folderName];
+	[[NSFileManager defaultManager] createDirectoryAtPath:hlsDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
+	self.hlsWriter = [[KFHLSWriter alloc] initWithDirectoryPath:hlsDirectoryPath];
+	[_hlsWriter addVideoStreamWithWidth:self.videoWidth height:self.videoHeight];
+	[_hlsWriter addAudioStreamWithSampleRate:self.audioSampleRate];
 }
+
+//- (void) setupHLSWriterWithEndpoint:(KFS3Stream*)endpoint {
+//    
+//    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+//    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+//    NSString *folderName = [NSString stringWithFormat:@"%@.hls", endpoint.streamID];
+//    NSString *hlsDirectoryPath = [basePath stringByAppendingPathComponent:folderName];
+//    [[NSFileManager defaultManager] createDirectoryAtPath:hlsDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
+//    self.hlsWriter = [[KFHLSWriter alloc] initWithDirectoryPath:hlsDirectoryPath];
+//    [_hlsWriter addVideoStreamWithWidth:self.videoWidth height:self.videoHeight];
+//    [_hlsWriter addAudioStreamWithSampleRate:self.audioSampleRate];
+//
+//}
 
 - (void) setupEncoders {
     self.audioSampleRate = 44100;
@@ -212,24 +223,25 @@
     self.locationManager = [[CLLocationManager alloc] init];
     self.locationManager.delegate = self;
     [self.locationManager startUpdatingLocation];
-    [[KFAPIClient sharedClient] startNewStream:^(KFStream *endpointResponse, NSError *error) {
-        if (error) {
-            if (self.delegate && [self.delegate respondsToSelector:@selector(recorderDidStartRecording:error:)]) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self.delegate recorderDidStartRecording:self error:error];
-                });
-            }
-            return;
-        }
-        self.stream = endpointResponse;
+//    [[KFAPIClient sharedClient] startNewStream:^(KFStream *endpointResponse, NSError *error) {
+//        if (error) {
+//            if (self.delegate && [self.delegate respondsToSelector:@selector(recorderDidStartRecording:error:)]) {
+//                dispatch_async(dispatch_get_main_queue(), ^{
+//                    [self.delegate recorderDidStartRecording:self error:error];
+//                });
+//            }
+//            return;
+//        }
+//        self.stream = endpointResponse;
+				self.stream = nil;
         [self setStreamStartLocation];
-        if ([endpointResponse isKindOfClass:[KFS3Stream class]]) {
-            KFS3Stream *s3Endpoint = (KFS3Stream*)endpointResponse;
-            s3Endpoint.streamState = KFStreamStateStreaming;
-            [self setupHLSWriterWithEndpoint:s3Endpoint];
-            
-            [[KFHLSMonitor sharedMonitor] startMonitoringFolderPath:_hlsWriter.directoryPath endpoint:s3Endpoint delegate:self];
-            
+//        if ([endpointResponse isKindOfClass:[KFS3Stream class]]) {
+//            KFS3Stream *s3Endpoint = (KFS3Stream*)endpointResponse;
+//            s3Endpoint.streamState = KFStreamStateStreaming;
+//            [self setupHLSWriterWithEndpoint:s3Endpoint];
+						[self setupHLSWriterWithStreamID:@"streamID"];
+//            [[KFHLSMonitor sharedMonitor] startMonitoringFolderPath:_hlsWriter.directoryPath endpoint:endpointResponse delegate:self];
+	
             NSError *error = nil;
             [_hlsWriter prepareForWriting:&error];
             if (error) {
@@ -241,9 +253,9 @@
                     [self.delegate recorderDidStartRecording:self error:nil];
                 });
             }
-        }
-    }];
-    
+//        }
+//    }];
+	
 }
 
 - (void) reverseGeocodeStream:(KFStream*)stream {
