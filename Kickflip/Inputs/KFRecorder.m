@@ -310,13 +310,13 @@
         if (error) {
             DDLogError(@"Error stop recording: %@", error);
         }
-        [[KFAPIClient sharedClient] stopStream:self.stream callbackBlock:^(BOOL success, NSError *error) {
-            if (!success) {
-                DDLogError(@"Error stopping stream: %@", error);
-            } else {
-                DDLogVerbose(@"Stream stopped: %@", self.stream.streamID);
-            }
-        }];
+//        [[KFAPIClient sharedClient] stopStream:self.stream callbackBlock:^(BOOL success, NSError *error) {
+//            if (!success) {
+//                DDLogError(@"Error stopping stream: %@", error);
+//            } else {
+//                DDLogVerbose(@"Stream stopped: %@", self.stream.streamID);
+//            }
+//        }];
         if ([self.stream isKindOfClass:[KFS3Stream class]]) {
             [[KFHLSMonitor sharedMonitor] finishUploadingContentsAtFolderPath:_hlsWriter.directoryPath endpoint:(KFS3Stream*)self.stream];
         }
